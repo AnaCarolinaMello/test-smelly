@@ -17,5 +17,9 @@
     "transform": {
       "^.+\\.js$": "babel-jest"
     }
+  },
+  "dependencies": {
+    "eslint": "^8.0.0",
+    "eslint-plugin-jest": "^29.0.1"
   }
 }
