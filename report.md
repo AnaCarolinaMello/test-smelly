@@ -1,6 +1,6 @@
 # Análise e Refatoração de Test Smells
 
-**Disciplina:** Qualidade de Software  
+**Disciplina:** Teste de Software  
 **Trabalho:** Análise e Refatoração de Test Smells  
 **Aluno:** Ana Carolina Caldas de Mello  
 **Matrícula:** 801198 
@@ -26,7 +26,7 @@ Durante a análise da suíte de testes `userService.smelly.test.js`, foram ident
 - **Manutenção complexa:** Mudanças na lógica de negócio podem quebrar o teste de forma não óbvia
 - **Baixa legibilidade:** Outros desenvolvedores terão dificuldade para entender e manter o teste
 
-### 1.2 Rotten Green Test (Linhas 66-75)
+### 1.2 Rotten Green Test (Linhas 66 - 75)
 
 **Descrição:** O teste "deve falhar ao criar usuário menor de idade" usa `try/catch` sem garantir que a exceção seja lançada.
 
@@ -40,7 +40,7 @@ Durante a análise da suíte de testes `userService.smelly.test.js`, foram ident
 - **Falsa sensação de segurança:** A cobertura de testes mostra 100%, mas na realidade não há proteção
 - **Regressões silenciosas:** Mudanças no código podem quebrar a funcionalidade sem o teste detectar
 
-### 1.3 Fragile Test (Linhas 54-64)
+### 1.3 Fragile Test (Linhas 54 - 64)
 
 **Descrição:** O teste "deve gerar um relatório de usuários formatado" depende da formatação exata de strings.
 
@@ -61,53 +61,12 @@ Durante a análise da suíte de testes `userService.smelly.test.js`, foram ident
 ### 2.1 Teste Mais Problemático: Conditional Logic Test
 
 **Antes:**
-```javascript
-test('deve desativar usuários se eles não forem administradores', () => {
-  const usuarioComum = userService.createUser('Comum', 'comum@teste.com', 30);
-  const usuarioAdmin = userService.createUser('Admin', 'admin@teste.com', 40, true);
 
-  const todosOsUsuarios = [usuarioComum, usuarioAdmin];
-
-  // O teste tem um loop e um if, tornando-o complexo e menos claro.
-  for (const user of todosOsUsuarios) {
-    const resultado = userService.deactivateUser(user.id);
-    if (!user.isAdmin) {
-      // Este expect só roda para o usuário comum.
-      expect(resultado).toBe(true);
-      const usuarioAtualizado = userService.getUserById(user.id);
-      expect(usuarioAtualizado.status).toBe('inativo');
-    } else {
-      // E este só roda para o admin.
-      expect(resultado).toBe(false);
-    }
-  }
-});
-```
+![Resultado antes da refatoração](img/test-before.png)
 
 **Depois:**
-```javascript
-test('deve desativar usuário comum', () => {
-  // Arrange
-  const usuarioComum = userService.createUser('Comum', 'comum@teste.com', 30);
-  // Act
-  const resultado = userService.deactivateUser(usuarioComum.id);
-  const usuarioAtualizado = userService.getUserById(usuarioComum.id);
-  // Assert
-  expect(resultado).toBe(true);
-  expect(usuarioAtualizado.status).toBe('inativo');
-});
 
-test('não deve desativar usuário administrador', () => {
-  // Arrange
-  const usuarioAdmin = userService.createUser('Admin', 'admin@teste.com', 40, true);
-  // Act
-  const resultado = userService.deactivateUser(usuarioAdmin.id);
-  const usuarioAtualizado = userService.getUserById(usuarioAdmin.id);
-  // Assert
-  expect(resultado).toBe(false);
-  expect(usuarioAtualizado.status).toBe('ativo');
-});
-```
+![Resultado após a refatoração](img/test-after.png)
 
 ### 2.2 Decisões de Refatoração
 
@@ -116,20 +75,10 @@ test('não deve desativar usuário administrador', () => {
 - **Justificativa:** Cada teste agora tem uma única responsabilidade clara
 - **Benefício:** Facilita debugging e manutenção
 
-**2. Aplicação do Padrão AAA:**
-- **Decisão:** Estruturar cada teste com Arrange, Act, Assert bem definidos
-- **Justificativa:** Torna a estrutura do teste previsível e legível
-- **Benefício:** Qualquer desenvolvedor pode entender rapidamente o que o teste faz
-
-**3. Remoção de Lógica Condicional:**
+**2. Remoção de Lógica Condicional:**
 - **Decisão:** Eliminar completamente loops e condicionais dos testes
 - **Justificativa:** Testes devem ser lineares e determinísticos
 - **Benefício:** Reduz complexidade ciclomática e melhora confiabilidade
-
-**4. Nomes Descritivos:**
-- **Decisão:** Usar nomes que descrevem exatamente o comportamento esperado
-- **Justificativa:** O nome do teste serve como documentação viva
-- **Benefício:** Facilita compreensão e serve como especificação
 
 ---
 
@@ -138,29 +87,12 @@ test('não deve desativar usuário administrador', () => {
 ### 3.1 Execução - Detecção Automática de Problemas
 
 **Antes:**
-```bash
-C:\Users\ETUS-0047\Desktop\AnaCarolinaPessoal\test-smelly>npx eslint .
 
-C:\Users\ETUS-0047\Desktop\AnaCarolinaPessoal\test-smelly\test\userService.smelly.test.js
-  44:9  error    Avoid calling `expect` conditionally`  jest/no-conditional-expect
-  46:9  error    Avoid calling `expect` conditionally`  jest/no-conditional-expect
-  49:9  error    Avoid calling `expect` conditionally`  jest/no-conditional-expect
-  73:7  error    Avoid calling `expect` conditionally`  jest/no-conditional-expect
-  77:3  warning  Tests should not be skipped            jest/no-disabled-tests
-  77:3  warning  Test has no assertions                 jest/expect-expect
-
-✖ 6 problems (4 errors, 2 warnings)
-```
 ![Resultado antes da refatoração](img/before.png)
 
 **Depois:**
-```bash
-C:\Users\ETUS-0047\Desktop\AnaCarolinaPessoal\test-smelly>npx eslint test/userService.clean.test.js   
 
-C:\Users\ETUS-0047\Desktop\AnaCarolinaPessoal\test-smelly>
-```
-
-![Resultado após refatoração](img/after.png)
+![Resultado após a refatoração](img/after.png)
 
 
 
@@ -169,17 +101,13 @@ C:\Users\ETUS-0047\Desktop\AnaCarolinaPessoal\test-smelly>
 **Problemas Detectados Automaticamente:**
 
 1. **`jest/no-conditional-expect` (4 erros):**
-   - **Linhas 44, 46, 49:** Detectou expects dentro de condicionais no loop
-   - **Linha 73:** Detectou expect dentro do bloco try/catch
-   - **Valor:** A ferramenta identificou precisamente o smell "Conditional Logic"
+   - A ferramenta identificou precisamente o smell "Conditional Logic"
 
 2. **`jest/no-disabled-tests` (1 warning):**
-   - **Linha 77:** Detectou o teste com `.skip`
-   - **Valor:** Identificou o smell "Empty Test" automaticamente
+   - Identificou o smell "Empty Test" automaticamente
 
 3. **`jest/expect-expect` (1 warning):**
-   - **Linha 77:** Detectou teste sem assertions
-   - **Valor:** Confirmou que o teste skipado não tem validações
+   - Confirmou que o teste skipado não tem validações
 
 **Limitações da Ferramenta:**
 - **Fragile Test não detectado:** O ESLint não identificou o problema de fragile test
